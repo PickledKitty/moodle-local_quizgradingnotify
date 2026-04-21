@@ -23,10 +23,8 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-/**
- * Declares the message provider used for Moodle bell (popup) notifications.
- * Teachers can control delivery preferences via their messaging preferences page.
- */
+// Declares the message provider used for Moodle bell (popup) notifications.
+// Teachers can control delivery preferences via their messaging preferences page.
 $messageproviders = [
     'grading_required' => [
         'capability' => 'mod/quiz:grade',

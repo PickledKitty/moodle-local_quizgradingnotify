@@ -34,7 +34,6 @@ require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_local_quizgradingnotify extends behat_base {
-
     /**
      * Set the grading notification method for a quiz.
      *

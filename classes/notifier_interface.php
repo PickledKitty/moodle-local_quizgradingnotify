@@ -24,13 +24,10 @@
 
 namespace local_quizgradingnotify;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Interface for all grading notification strategies.
  */
 interface notifier_interface {
-
     /**
      * Send (or store) the grading-required notification.
      *

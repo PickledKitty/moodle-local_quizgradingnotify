@@ -24,13 +24,10 @@
 
 namespace local_quizgradingnotify;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Factory that returns the correct notifier strategy for a given method string.
  */
 class notifier_factory {
-
     /**
      * Instantiate and return the appropriate notifier.
      *
@@ -40,10 +37,11 @@ class notifier_factory {
      */
     public static function make(string $method): notifier_interface {
         return match ($method) {
-            'email'    => new notifier\email(),
-            'popup'    => new notifier\popup(),
-            default    => throw new \coding_exception(
-                "local_quizgradingnotify: unknown notification method '$method'"),
+            'email' => new notifier\email(),
+            'popup' => new notifier\popup(),
+            default => throw new \coding_exception(
+                "local_quizgradingnotify: unknown notification method '$method'"
+            ),
         };
     }
 }

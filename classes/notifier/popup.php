@@ -24,8 +24,6 @@
 
 namespace local_quizgradingnotify\notifier;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Sends a Moodle notification (appears under the bell icon) to all
  * enrolled users who hold mod/quiz:grade.
@@ -33,7 +31,6 @@ defined('MOODLE_INTERNAL') || die();
  * Delivery is subject to each teacher's own messaging preferences.
  */
 class popup implements \local_quizgradingnotify\notifier_interface {
-
     /**
      * Send a popup notification when a quiz attempt with manual questions is submitted.
      *
@@ -42,7 +39,7 @@ class popup implements \local_quizgradingnotify\notifier_interface {
      * @return void
      */
     public function notify(\core\event\base $event, \stdClass $cm): void {
-        $context  = \context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
         $teachers = get_enrolled_users($context, 'mod/quiz:grade');
 
         if (empty($teachers)) {
@@ -50,26 +47,26 @@ class popup implements \local_quizgradingnotify\notifier_interface {
         }
 
         $gradingurl = new \moodle_url('/mod/quiz/report.php', [
-            'id'   => $cm->id,
+            'id' => $cm->id,
             'mode' => 'grading',
         ]);
 
         $a = (object) ['quizname' => $cm->name];
 
         foreach ($teachers as $teacher) {
-            $message                    = new \core\message\message();
-            $message->component         = 'local_quizgradingnotify';
-            $message->name              = 'grading_required';
-            $message->userfrom          = \core_user::get_noreply_user();
-            $message->userto            = $teacher;
-            $message->subject           = get_string('popup_subject',  'local_quizgradingnotify', $a);
-            $message->fullmessage       = get_string('popup_body',     'local_quizgradingnotify', $a);
+            $message = new \core\message\message();
+            $message->component = 'local_quizgradingnotify';
+            $message->name = 'grading_required';
+            $message->userfrom = \core_user::get_noreply_user();
+            $message->userto = $teacher;
+            $message->subject = get_string('popup_subject', 'local_quizgradingnotify', $a);
+            $message->fullmessage = get_string('popup_body', 'local_quizgradingnotify', $a);
             $message->fullmessageformat = FORMAT_PLAIN;
-            $message->fullmessagehtml   = '';
-            $message->smallmessage      = get_string('popup_small',    'local_quizgradingnotify', $a);
-            $message->notification      = 1;
-            $message->contexturl        = $gradingurl->out(false);
-            $message->contexturlname    = get_string('grading_report', 'local_quizgradingnotify');
+            $message->fullmessagehtml = '';
+            $message->smallmessage = get_string('popup_small', 'local_quizgradingnotify', $a);
+            $message->notification = 1;
+            $message->contexturl = $gradingurl->out(false);
+            $message->contexturlname = get_string('grading_report', 'local_quizgradingnotify');
 
             message_send($message);
         }

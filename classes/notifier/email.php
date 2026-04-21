@@ -24,13 +24,10 @@
 
 namespace local_quizgradingnotify\notifier;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Sends a plain email to all enrolled users who hold mod/quiz:grade.
  */
 class email implements \local_quizgradingnotify\notifier_interface {
-
     /**
      * Send an email notification when a quiz attempt with manual questions is submitted.
      *
@@ -39,7 +36,7 @@ class email implements \local_quizgradingnotify\notifier_interface {
      * @return void
      */
     public function notify(\core\event\base $event, \stdClass $cm): void {
-        $context  = \context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
         $teachers = get_enrolled_users($context, 'mod/quiz:grade');
 
         if (empty($teachers)) {
@@ -47,22 +44,22 @@ class email implements \local_quizgradingnotify\notifier_interface {
         }
 
         $gradingurl = new \moodle_url('/mod/quiz/report.php', [
-            'id'   => $cm->id,
+            'id' => $cm->id,
             'mode' => 'grading',
         ]);
 
         $course = get_course($cm->course);
 
         $a = (object) [
-            'quizname'        => $cm->name,
+            'quizname' => $cm->name,
             'courseshortname' => $course->shortname,
-            'url'             => $gradingurl->out(false),
+            'url' => $gradingurl->out(false),
         ];
 
-        $subject  = get_string('email_subject', 'local_quizgradingnotify', $a);
-        $bodytext = get_string('email_body',    'local_quizgradingnotify', $a);
-        $bodyhtml = get_string('email_bodyhtml','local_quizgradingnotify', $a);
-        $noreply  = \core_user::get_noreply_user();
+        $subject = get_string('email_subject', 'local_quizgradingnotify', $a);
+        $bodytext = get_string('email_body', 'local_quizgradingnotify', $a);
+        $bodyhtml = get_string('email_bodyhtml', 'local_quizgradingnotify', $a);
+        $noreply = \core_user::get_noreply_user();
 
         foreach ($teachers as $teacher) {
             email_to_user($teacher, $noreply, $subject, $bodytext, $bodyhtml);

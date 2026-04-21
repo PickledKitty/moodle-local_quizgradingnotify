@@ -24,13 +24,10 @@
 
 namespace local_quizgradingnotify;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Event observer for quiz attempt events.
  */
 class observer {
-
     /**
      * Fired on attempt_submitted (and attempt_becameoverdue).
      * Checks whether the quiz has a notification setting and whether any
@@ -42,7 +39,7 @@ class observer {
     public static function attempt_submitted(\core\event\base $event): void {
         global $DB;
 
-        // $event->contextinstanceid is the course-module ID for quiz events.
+        // Course-module ID for quiz events.
         $cmid = $event->contextinstanceid;
 
         $setting = $DB->get_record('local_quizgradingnotify_cfg', ['cmid' => $cmid]);

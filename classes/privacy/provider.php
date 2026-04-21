@@ -24,8 +24,6 @@
 
 namespace local_quizgradingnotify\privacy;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Privacy API implementation.
  *
@@ -34,7 +32,11 @@ defined('MOODLE_INTERNAL') || die();
  * so this plugin has no user data to export or delete.
  */
 class provider implements \core_privacy\local\metadata\null_provider {
-
+    /**
+     * Get the reason why this plugin does not store personal data.
+     *
+     * @return string
+     */
     public static function get_reason(): string {
         return get_string('privacy:metadata', 'local_quizgradingnotify');
     }

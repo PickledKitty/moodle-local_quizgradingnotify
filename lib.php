@@ -44,22 +44,31 @@ function local_quizgradingnotify_coursemodule_standard_elements($formwrapper, $m
         }
     }
 
-    $mform->addElement('header', 'gradingnotifyheader',
-        get_string('gradingnotifications', 'local_quizgradingnotify'));
+    $mform->addElement(
+        'header',
+        'gradingnotifyheader',
+        get_string('gradingnotifications', 'local_quizgradingnotify')
+    );
 
     $options = [
-        'none'     => get_string('notify_none',     'local_quizgradingnotify'),
-        'email'    => get_string('notify_email',    'local_quizgradingnotify'),
-        'popup'    => get_string('notify_popup',    'local_quizgradingnotify'),
+        'none' => get_string('notify_none', 'local_quizgradingnotify'),
+        'email' => get_string('notify_email', 'local_quizgradingnotify'),
+        'popup' => get_string('notify_popup', 'local_quizgradingnotify'),
     ];
 
-    $mform->addElement('select', 'gradingnotifymethod',
+    $mform->addElement(
+        'select',
+        'gradingnotifymethod',
         get_string('gradingnotifymethod', 'local_quizgradingnotify'),
-        $options);
+        $options
+    );
     $mform->setDefault('gradingnotifymethod', 'none');
     $mform->setType('gradingnotifymethod', PARAM_ALPHA);
-    $mform->addHelpButton('gradingnotifymethod', 'gradingnotifymethod',
-        'local_quizgradingnotify');
+    $mform->addHelpButton(
+        'gradingnotifymethod',
+        'gradingnotifymethod',
+        'local_quizgradingnotify'
+    );
 
     // Pre-populate if editing an existing quiz.
     if ($cmid) {

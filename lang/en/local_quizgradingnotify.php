@@ -28,7 +28,7 @@ $string['pluginname'] = 'Quiz grading notifications';
 $string['messageprovider:grading_required'] = 'Quiz grading required';
 $string['quizgradingnotify:configure'] = 'Configure quiz grading notifications';
 
-// ── mod_form setting ────────────────────────────────────────────────────────
+// Mod form setting.
 $string['gradingnotifications']       = 'Grading notifications';
 $string['gradingnotifymethod']        = 'Notify when questions require grading';
 $string['gradingnotifymethod_help']   = 'Choose how teachers are alerted when a student submits a quiz that contains manually graded questions (e.g. essay questions).
@@ -39,12 +39,12 @@ $string['gradingnotifymethod_help']   = 'Choose how teachers are alerted when a 
 
 **Moodle notification** – A notification appears under the bell icon in Moodle. Delivery respects each teacher\'s messaging preferences.';
 
-// ── Option labels ───────────────────────────────────────────────────────────
+// Option labels.
 $string['notify_none']     = 'None';
 $string['notify_email']    = 'Email';
 $string['notify_popup']    = 'Moodle notification (bell)';
 
-// ── Email notifier ──────────────────────────────────────────────────────────
+// Email notifier.
 $string['email_subject']   = 'Quiz grading required: {$a->quizname}';
 $string['email_body']      = 'A student has submitted the quiz "{$a->quizname}" in course {$a->courseshortname} and one or more questions require manual grading.
 
@@ -52,11 +52,11 @@ Please visit the grading report to review and mark the submission:
 {$a->url}';
 $string['email_bodyhtml']  = '<p>A student has submitted the quiz <strong>{$a->quizname}</strong> in course <strong>{$a->courseshortname}</strong> and one or more questions require manual grading.</p><p><a href="{$a->url}">Open the grading report</a></p>';
 
-// ── Popup (bell) notifier ───────────────────────────────────────────────────
+// Popup (bell) notifier.
 $string['popup_subject']   = 'Grading required: {$a->quizname}';
 $string['popup_body']      = 'A student has submitted "{$a->quizname}" and one or more questions require manual grading.';
 $string['popup_small']     = 'Quiz grading required';
 $string['grading_report']  = 'Open grading report';
 
-// ── Privacy ─────────────────────────────────────────────────────────────────
+// Privacy.
 $string['privacy:metadata'] = 'The Quiz grading notifications plugin stores only quiz configuration settings. It does not store any personal user data.';
