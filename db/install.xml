@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/quizgradingnotify/db" VERSION="20241101" COMMENT="XMLDB file for local_quizgradingnotify">
+  <TABLES>
+
+    <TABLE NAME="local_quizgradingnotify_settings"
+           COMMENT="Per-quiz grading notification method setting">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"  LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="cmid"         TYPE="int"  LENGTH="10" NOTNULL="true" COMMENT="Course-module ID of the quiz"/>
+        <FIELD NAME="method"       TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="none"
+               COMMENT="Notification method: none|email|popup"/>
+        <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int"  LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="cmid"    TYPE="unique"  FIELDS="cmid"/>
+      </KEYS>
+    </TABLE>
+
+  </TABLES>
+</XMLDB>
