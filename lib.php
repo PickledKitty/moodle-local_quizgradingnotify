@@ -63,7 +63,7 @@ function local_quizgradingnotify_coursemodule_standard_elements($formwrapper, $m
 
     // Pre-populate if editing an existing quiz.
     if ($cmid) {
-        $setting = $DB->get_record('local_quizgradingnotify_settings', ['cmid' => $cmid]);
+        $setting = $DB->get_record('local_quizgradingnotify_cfg', ['cmid' => $cmid]);
         if ($setting) {
             $mform->setDefault('gradingnotifymethod', $setting->method);
         }
@@ -92,13 +92,13 @@ function local_quizgradingnotify_coursemodule_edit_post_actions($data, $course):
         $method = 'none';
     }
 
-    $existing = $DB->get_record('local_quizgradingnotify_settings', ['cmid' => $cm->id]);
+    $existing = $DB->get_record('local_quizgradingnotify_cfg', ['cmid' => $cm->id]);
     if ($existing) {
         $existing->method       = $method;
         $existing->timemodified = time();
-        $DB->update_record('local_quizgradingnotify_settings', $existing);
+        $DB->update_record('local_quizgradingnotify_cfg', $existing);
     } else {
-        $DB->insert_record('local_quizgradingnotify_settings', [
+        $DB->insert_record('local_quizgradingnotify_cfg', [
             'cmid'         => $cm->id,
             'method'       => $method,
             'timecreated'  => time(),

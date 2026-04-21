@@ -2,7 +2,7 @@
 <XMLDB PATH="local/quizgradingnotify/db" VERSION="20241101" COMMENT="XMLDB file for local_quizgradingnotify">
   <TABLES>
 
-    <TABLE NAME="local_quizgradingnotify_settings"
+    <TABLE NAME="local_quizgradingnotify_cfg"
            COMMENT="Per-quiz grading notification method setting">
       <FIELDS>
         <FIELD NAME="id"           TYPE="int"  LENGTH="10" NOTNULL="true" SEQUENCE="true"/>

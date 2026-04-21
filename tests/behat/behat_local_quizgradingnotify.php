@@ -53,15 +53,15 @@ class behat_local_quizgradingnotify extends behat_base {
         $quiz = $DB->get_record('quiz', ['name' => $quizname], 'id,course', MUST_EXIST);
         $cm = get_coursemodule_from_instance('quiz', $quiz->id, $quiz->course, false, MUST_EXIST);
 
-        $existing = $DB->get_record('local_quizgradingnotify_settings', ['cmid' => $cm->id]);
+        $existing = $DB->get_record('local_quizgradingnotify_cfg', ['cmid' => $cm->id]);
         if ($existing) {
             $existing->method = $method;
             $existing->timemodified = time();
-            $DB->update_record('local_quizgradingnotify_settings', $existing);
+            $DB->update_record('local_quizgradingnotify_cfg', $existing);
             return;
         }
 
-        $DB->insert_record('local_quizgradingnotify_settings', [
+        $DB->insert_record('local_quizgradingnotify_cfg', [
             'cmid' => $cm->id,
             'method' => $method,
             'timecreated' => time(),
@@ -81,7 +81,7 @@ class behat_local_quizgradingnotify extends behat_base {
 
         $quiz = $DB->get_record('quiz', ['name' => $quizname], 'id,course', MUST_EXIST);
         $cm = get_coursemodule_from_instance('quiz', $quiz->id, $quiz->course, false, MUST_EXIST);
-        $setting = $DB->get_record('local_quizgradingnotify_settings', ['cmid' => $cm->id], 'method', MUST_EXIST);
+        $setting = $DB->get_record('local_quizgradingnotify_cfg', ['cmid' => $cm->id], 'method', MUST_EXIST);
 
         if ($setting->method !== $method) {
             throw new Exception(

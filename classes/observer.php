@@ -45,7 +45,7 @@ class observer {
         // $event->contextinstanceid is the course-module ID for quiz events.
         $cmid = $event->contextinstanceid;
 
-        $setting = $DB->get_record('local_quizgradingnotify_settings', ['cmid' => $cmid]);
+        $setting = $DB->get_record('local_quizgradingnotify_cfg', ['cmid' => $cmid]);
         if (!$setting || $setting->method === 'none') {
             return;
         }
