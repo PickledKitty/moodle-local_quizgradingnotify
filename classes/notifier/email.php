@@ -31,6 +31,13 @@ defined('MOODLE_INTERNAL') || die();
  */
 class email implements \local_quizgradingnotify\notifier_interface {
 
+    /**
+     * Send an email notification when a quiz attempt with manual questions is submitted.
+     *
+     * @param \core\event\base $event The quiz attempt event.
+     * @param \stdClass $cm The course-module record for the quiz.
+     * @return void
+     */
     public function notify(\core\event\base $event, \stdClass $cm): void {
         $context  = \context_module::instance($cm->id);
         $teachers = get_enrolled_users($context, 'mod/quiz:grade');

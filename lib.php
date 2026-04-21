@@ -38,7 +38,7 @@ function local_quizgradingnotify_coursemodule_standard_elements($formwrapper, $m
 
     $cmid = $formwrapper->get_coursemodule()->id ?? 0;
     if ($cmid) {
-        $context = context_module::instance($cmid);
+        $context = \context_module::instance($cmid);
         if (!has_capability('local/quizgradingnotify:configure', $context)) {
             return;
         }
