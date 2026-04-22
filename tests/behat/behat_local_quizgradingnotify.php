@@ -71,7 +71,7 @@ class behat_local_quizgradingnotify extends behat_base {
     /**
      * Assert the saved grading notification method for a quiz.
      *
-     * @Then /^the quiz "(?P<quizname_str>(?:[^"]|\\")*)" should have grading notification method "(?P<method_str>(?:[^"]|\\")*)"/    
+     * @Then /^the quiz "(?P<quizname_str>(?:[^"]|\\")*)" should have grading notification method "(?P<method_str>(?:[^"]|\\")*)"/
      * @param string $quizname
      * @param string $method
      */
