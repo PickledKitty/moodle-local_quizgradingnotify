@@ -69,8 +69,10 @@ final class notifier_email_test extends \advanced_testcase {
         $message = reset($messages);
         self::assertSame($teacher->email, $message->to);
         self::assertStringContainsString('Quiz grading required', $message->subject);
-        self::assertStringContainsString('one or more questions require manual grading',
-            quoted_printable_decode($message->body));
+        self::assertStringContainsString(
+            'one or more questions require manual grading',
+            quoted_printable_decode($message->body)
+        );
     }
 
     /**
