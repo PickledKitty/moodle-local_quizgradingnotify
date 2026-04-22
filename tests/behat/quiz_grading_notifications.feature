@@ -18,7 +18,8 @@ Feature: Configure quiz grading notification method
       | activity | course | idnumber | name   | intro     | section |
       | quiz     | C1     | quiz1    | Quiz 1 | Quiz intro | 1      |
     When I log in as "teacher1"
-    And I am on the "Quiz 1" "mod_quiz > Edit" page
+    And I am on the "Quiz 1" "mod_quiz > View" page
+    And I navigate to "Settings" in current page administration
     And I expand all fieldsets
     And I set the field "gradingnotifymethod" to "<methodlabel>"
     And I press "Save and display"

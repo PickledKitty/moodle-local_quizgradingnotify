@@ -49,6 +49,6 @@ Feature: Deliver quiz grading notifications on attempt submission
     Then I should see "<expectedtext>"
 
     Examples:
-      | method | expectedtext                                  |
-      | popup  | one or more questions require manual grading. |
-      | none   | You have no notifications                      |
+      | method | expectedtext              |
+      | popup  | Grading required: Quiz 1  |
+      | none   | You have no notifications |

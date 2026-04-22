@@ -70,7 +70,7 @@ final class notifier_popup_test extends \advanced_testcase {
         $message = reset($messages);
         self::assertEquals($teacher->id, $message->useridto);
         self::assertEquals('local_quizgradingnotify', $message->component);
-        self::assertEquals('grading_required', $message->name);
+        self::assertEquals('grading_required', $message->eventtype);
         self::assertStringContainsString('Grading required: Quiz 1', $message->subject);
         self::assertStringContainsString('one or more questions require manual grading', $message->fullmessage);
     }
