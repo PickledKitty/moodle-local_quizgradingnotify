@@ -58,6 +58,30 @@ class observer {
     }
 
     /**
+     * Fired when a quiz report is viewed.
+     *
+        * Opening the Manual grading report counts as acknowledgement and
+        * clears pending notification state for this teacher and quiz module.
+     *
+     * @param \mod_quiz\event\report_viewed $event
+     * @return void
+     */
+    public static function report_viewed(\mod_quiz\event\report_viewed $event): void {
+        if (($event->other['reportname'] ?? '') !== 'grading') {
+            return;
+        }
+
+        $userid = (int) $event->userid;
+        $cmid = (int) $event->contextinstanceid;
+
+        if ($userid <= 0 || $cmid <= 0) {
+            return;
+        }
+
+        pending_state::clear_pending($cmid, $userid);
+    }
+
+    /**
      * Returns true if the given attempt has at least one step in the
      * 'needsgrading' state (i.e. a manually graded question awaiting a mark).
      *

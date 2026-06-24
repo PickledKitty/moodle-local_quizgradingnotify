@@ -39,6 +39,15 @@ one manually graded question (e.g. an Essay question), the configured
 notification is dispatched to all teachers enrolled in the course who hold the
 `mod/quiz:grade` capability.
 
+To reduce notification spam, the plugin deduplicates per teacher and per quiz:
+
+- Popup (bell) and email notifications are both suppressed while a previous
+   notification is pending for the same quiz.
+- Pending state is cleared when the teacher opens that quiz's **Manual grading
+   report**.
+- After a send, an additional cooldown window (currently 2 hours) also
+   suppresses repeat notifications for that teacher and quiz.
+
 ---
 
 ## Moodle coding standards compliance

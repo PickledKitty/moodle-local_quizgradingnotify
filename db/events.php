@@ -32,4 +32,11 @@ $observers = [
         'internal'    => false,
         'priority'    => 0,
     ],
+    [
+        'eventname'   => '\mod_quiz\event\report_viewed',
+        'callback'    => '\local_quizgradingnotify\observer::report_viewed',
+        'includefile' => null,
+        'internal'    => false,
+        'priority'    => 0,
+    ],
 ];

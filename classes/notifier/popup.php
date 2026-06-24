@@ -24,6 +24,8 @@
 
 namespace local_quizgradingnotify\notifier;
 
+use local_quizgradingnotify\pending_state;
+
 /**
  * Sends a Moodle notification (appears under the bell icon) to all
  * enrolled users who hold mod/quiz:grade.
@@ -52,8 +54,16 @@ class popup implements \local_quizgradingnotify\notifier_interface {
         ]);
 
         $a = (object) ['quizname' => $cm->name];
+        $contexturl = $gradingurl->out(false);
 
         foreach ($teachers as $teacher) {
+            $cmid = (int) $cm->id;
+            $userid = (int) $teacher->id;
+
+            if (pending_state::has_pending($cmid, $userid)) {
+                continue;
+            }
+
             $message = new \core\message\message();
             $message->component = 'local_quizgradingnotify';
             $message->name = 'grading_required';
@@ -65,10 +75,13 @@ class popup implements \local_quizgradingnotify\notifier_interface {
             $message->fullmessagehtml = '';
             $message->smallmessage = get_string('popup_small', 'local_quizgradingnotify', $a);
             $message->notification = 1;
-            $message->contexturl = $gradingurl->out(false);
+            $message->contexturl = $contexturl;
             $message->contexturlname = get_string('grading_report', 'local_quizgradingnotify');
 
-            message_send($message);
+            $sent = message_send($message);
+            if ($sent) {
+                pending_state::mark_pending($cmid, $userid);
+            }
         }
     }
 }

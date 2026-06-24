@@ -24,6 +24,8 @@
 
 namespace local_quizgradingnotify\notifier;
 
+use local_quizgradingnotify\pending_state;
+
 /**
  * Sends a plain email to all enrolled users who hold mod/quiz:grade.
  */
@@ -62,7 +64,17 @@ class email implements \local_quizgradingnotify\notifier_interface {
         $noreply = \core_user::get_noreply_user();
 
         foreach ($teachers as $teacher) {
-            email_to_user($teacher, $noreply, $subject, $bodytext, $bodyhtml);
+            $cmid = (int) $cm->id;
+            $userid = (int) $teacher->id;
+
+            if (pending_state::has_pending($cmid, $userid)) {
+                continue;
+            }
+
+            $sent = email_to_user($teacher, $noreply, $subject, $bodytext, $bodyhtml);
+            if ($sent) {
+                pending_state::mark_pending($cmid, $userid);
+            }
         }
     }
 }

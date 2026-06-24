@@ -65,11 +65,11 @@ final class notifier_email_test extends \advanced_testcase {
         $messages = $sink->get_messages();
         $sink->close();
 
-        self::assertCount(1, $messages);
+        $this->assertCount(1, $messages);
         $message = reset($messages);
-        self::assertSame($teacher->email, $message->to);
-        self::assertStringContainsString('Quiz grading required', $message->subject);
-        self::assertStringContainsString(
+        $this->assertSame($teacher->email, $message->to);
+        $this->assertStringContainsString('Quiz grading required', $message->subject);
+        $this->assertStringContainsString(
             'one or more questions require manual grading',
             quoted_printable_decode($message->body)
         );
@@ -101,7 +101,136 @@ final class notifier_email_test extends \advanced_testcase {
         $notifier = new notifier\email();
         $notifier->notify($event, $cm);
 
-        self::assertCount(0, $sink->get_messages());
+        $this->assertCount(0, $sink->get_messages());
         $sink->close();
+    }
+
+    /**
+     * Ensure pending state suppresses duplicate email sends.
+     */
+    public function test_notify_suppresses_duplicate_email_while_pending(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_user([
+            'email' => 'teacher2@example.com',
+        ]);
+
+        $editingteacher = $DB->get_record('role', ['shortname' => 'editingteacher'], '*', MUST_EXIST);
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, $editingteacher->id);
+
+        $quiz = $this->getDataGenerator()->create_module('quiz', [
+            'course' => $course->id,
+            'name' => 'Quiz 2',
+        ]);
+        $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id, false, MUST_EXIST);
+        $event = $this->create_attempt_event($cm, $quiz->id, $teacher->id);
+
+        $sink = $this->redirectEmails();
+        $notifier = new notifier\email();
+        $notifier->notify($event, $cm);
+        $notifier->notify($event, $cm);
+
+        $messages = $sink->get_messages();
+        $sink->close();
+
+        $this->assertCount(1, $messages);
+        $this->assertTrue($DB->record_exists('local_quizgradingnotify_pnd', [
+            'cmid' => $cm->id,
+            'userid' => $teacher->id,
+            'pending' => 1,
+        ]));
+    }
+
+    /**
+     * Ensure grading-report acknowledgement still respects cooldown before resend.
+     */
+    public function test_notify_resends_only_after_cooldown_from_grading_report_view(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_user([
+            'email' => 'teacher3@example.com',
+        ]);
+
+        $editingteacher = $DB->get_record('role', ['shortname' => 'editingteacher'], '*', MUST_EXIST);
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, $editingteacher->id);
+
+        $quiz = $this->getDataGenerator()->create_module('quiz', [
+            'course' => $course->id,
+            'name' => 'Quiz 3',
+        ]);
+        $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id, false, MUST_EXIST);
+        $event = $this->create_attempt_event($cm, $quiz->id, $teacher->id);
+
+        $sink = $this->redirectEmails();
+        $notifier = new notifier\email();
+        $notifier->notify($event, $cm);
+
+        $this->assertTrue($DB->record_exists('local_quizgradingnotify_pnd', [
+            'cmid' => $cm->id,
+            'userid' => $teacher->id,
+            'pending' => 1,
+        ]));
+
+        $reportevent = \mod_quiz\event\report_viewed::create([
+            'context' => \context_module::instance($cm->id),
+            'userid' => $teacher->id,
+            'other' => [
+                'quizid' => $quiz->id,
+                'reportname' => 'grading',
+            ],
+        ]);
+        observer::report_viewed($reportevent);
+
+        $this->assertTrue($DB->record_exists('local_quizgradingnotify_pnd', [
+            'cmid' => $cm->id,
+            'userid' => $teacher->id,
+            'pending' => 0,
+        ]));
+
+        // Still suppressed immediately after report view because cooldown is active.
+        $notifier->notify($event, $cm);
+        $this->assertCount(1, $sink->get_messages());
+
+        // Expire cooldown and verify a new send is allowed.
+        $row = $DB->get_record('local_quizgradingnotify_pnd', [
+            'cmid' => $cm->id,
+            'userid' => $teacher->id,
+        ], '*', MUST_EXIST);
+        $row->timesent = time() - pending_state::cooldown_seconds() - 1;
+        $row->timemodified = time();
+        $DB->update_record('local_quizgradingnotify_pnd', $row);
+
+        $notifier->notify($event, $cm);
+
+        $messages = $sink->get_messages();
+        $sink->close();
+
+        $this->assertCount(2, $messages);
+    }
+
+    /**
+     * Creates an attempt submitted event for tests.
+     *
+     * @param \stdClass $cm
+     * @param int $quizid
+     * @param int $submitterid
+     * @return \mod_quiz\event\attempt_submitted
+     */
+    private function create_attempt_event(\stdClass $cm, int $quizid, int $submitterid): \mod_quiz\event\attempt_submitted {
+        return \mod_quiz\event\attempt_submitted::create([
+            'context' => \context_module::instance($cm->id),
+            'objectid' => 0,
+            'relateduserid' => $submitterid,
+            'other' => [
+                'submitterid' => $submitterid,
+                'quizid' => $quizid,
+            ],
+        ]);
     }
 }

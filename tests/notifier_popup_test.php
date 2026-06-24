@@ -66,13 +66,13 @@ final class notifier_popup_test extends \advanced_testcase {
         $messages = $sink->get_messages_by_component('local_quizgradingnotify');
         $sink->close();
 
-        self::assertCount(1, $messages);
+        $this->assertCount(1, $messages);
         $message = reset($messages);
-        self::assertEquals($teacher->id, $message->useridto);
-        self::assertEquals('local_quizgradingnotify', $message->component);
-        self::assertEquals('grading_required', $message->eventtype);
-        self::assertStringContainsString('Grading required: Quiz 1', $message->subject);
-        self::assertStringContainsString('one or more questions require manual grading', $message->fullmessage);
+        $this->assertEquals($teacher->id, $message->useridto);
+        $this->assertEquals('local_quizgradingnotify', $message->component);
+        $this->assertEquals('grading_required', $message->eventtype);
+        $this->assertStringContainsString('Grading required: Quiz 1', $message->subject);
+        $this->assertStringContainsString('one or more questions require manual grading', $message->fullmessage);
     }
 
     /**
@@ -102,7 +102,129 @@ final class notifier_popup_test extends \advanced_testcase {
         $notifier = new notifier\popup();
         $notifier->notify($event, $cm);
 
-        self::assertCount(0, $sink->get_messages_by_component('local_quizgradingnotify'));
+        $this->assertCount(0, $sink->get_messages_by_component('local_quizgradingnotify'));
         $sink->close();
     }
+
+    /**
+     * Ensure pending state suppresses duplicate popup sends.
+     */
+    public function test_notify_suppresses_duplicate_popup_while_pending(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_user();
+
+        $editingteacher = $DB->get_record('role', ['shortname' => 'editingteacher'], '*', MUST_EXIST);
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, $editingteacher->id);
+
+        $quiz = $this->getDataGenerator()->create_module('quiz', [
+            'course' => $course->id,
+            'name' => 'Quiz 1',
+        ]);
+        $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id, false, MUST_EXIST);
+        $event = $this->create_attempt_event($cm, $quiz->id, $teacher->id);
+
+        $sink = $this->redirectMessages();
+        $notifier = new notifier\popup();
+        $notifier->notify($event, $cm);
+        $notifier->notify($event, $cm);
+
+        $this->assertCount(1, $sink->get_messages_by_component('local_quizgradingnotify'));
+        $this->assertTrue($DB->record_exists('local_quizgradingnotify_pnd', [
+            'cmid' => $cm->id,
+            'userid' => $teacher->id,
+            'pending' => 1,
+        ]));
+        $sink->close();
+    }
+
+    /**
+     * Ensure grading-report acknowledgement still respects cooldown before resend.
+     */
+    public function test_notify_resends_popup_only_after_cooldown_from_grading_report_view(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_user();
+
+        $editingteacher = $DB->get_record('role', ['shortname' => 'editingteacher'], '*', MUST_EXIST);
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, $editingteacher->id);
+
+        $quiz = $this->getDataGenerator()->create_module('quiz', [
+            'course' => $course->id,
+            'name' => 'Quiz 1',
+        ]);
+        $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id, false, MUST_EXIST);
+        $event = $this->create_attempt_event($cm, $quiz->id, $teacher->id);
+
+        $sink = $this->redirectMessages();
+        $notifier = new notifier\popup();
+        $notifier->notify($event, $cm);
+
+        $this->assertTrue($DB->record_exists('local_quizgradingnotify_pnd', [
+            'cmid' => $cm->id,
+            'userid' => $teacher->id,
+            'pending' => 1,
+        ]));
+
+        $reportevent = \mod_quiz\event\report_viewed::create([
+            'context' => \context_module::instance($cm->id),
+            'userid' => $teacher->id,
+            'other' => [
+                'quizid' => $quiz->id,
+                'reportname' => 'grading',
+            ],
+        ]);
+        observer::report_viewed($reportevent);
+
+        $this->assertTrue($DB->record_exists('local_quizgradingnotify_pnd', [
+            'cmid' => $cm->id,
+            'userid' => $teacher->id,
+            'pending' => 0,
+        ]));
+
+        // Still suppressed immediately after report view because cooldown is active.
+        $notifier->notify($event, $cm);
+        $this->assertCount(1, $sink->get_messages_by_component('local_quizgradingnotify'));
+
+        // Expire cooldown and verify a new send is allowed.
+        $row = $DB->get_record('local_quizgradingnotify_pnd', [
+            'cmid' => $cm->id,
+            'userid' => $teacher->id,
+        ], '*', MUST_EXIST);
+        $row->timesent = time() - pending_state::cooldown_seconds() - 1;
+        $row->timemodified = time();
+        $DB->update_record('local_quizgradingnotify_pnd', $row);
+
+        $notifier->notify($event, $cm);
+
+        $this->assertCount(2, $sink->get_messages_by_component('local_quizgradingnotify'));
+        $sink->close();
+    }
+
+    /**
+     * Creates an attempt submitted event for tests.
+     *
+     * @param \stdClass $cm
+     * @param int $quizid
+     * @param int $submitterid
+     * @return \mod_quiz\event\attempt_submitted
+     */
+    private function create_attempt_event(\stdClass $cm, int $quizid, int $submitterid): \mod_quiz\event\attempt_submitted {
+        return \mod_quiz\event\attempt_submitted::create([
+            'context' => \context_module::instance($cm->id),
+            'objectid' => 0,
+            'relateduserid' => $submitterid,
+            'other' => [
+                'submitterid' => $submitterid,
+                'quizid' => $quizid,
+            ],
+        ]);
+    }
+
 }
