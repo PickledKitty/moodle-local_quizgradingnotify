@@ -60,20 +60,42 @@ class observer {
     /**
      * Fired when a quiz report is viewed.
      *
-        * Opening the Manual grading report counts as acknowledgement and
-        * clears pending notification state for this teacher and quiz module.
+     * Opening the overview or Manual grading report counts as acknowledgement
+     * and clears pending notification state for this teacher and quiz module.
      *
      * @param \mod_quiz\event\report_viewed $event
      * @return void
      */
     public static function report_viewed(\mod_quiz\event\report_viewed $event): void {
-        if (($event->other['reportname'] ?? '') !== 'grading') {
+        $reportname = $event->other['reportname'] ?? '';
+        if (!in_array($reportname, ['grading', 'overview'], true)) {
             return;
         }
 
-        $userid = (int) $event->userid;
-        $cmid = (int) $event->contextinstanceid;
+        self::acknowledge_teacher((int) $event->contextinstanceid, (int) $event->userid);
+    }
 
+    /**
+     * Fired when an individual quiz attempt is reviewed.
+     *
+     * Opening the one-by-one review page counts as acknowledgement and clears
+     * pending notification state for this teacher and quiz module.
+     *
+     * @param \mod_quiz\event\attempt_reviewed $event
+     * @return void
+     */
+    public static function attempt_reviewed(\mod_quiz\event\attempt_reviewed $event): void {
+        self::acknowledge_teacher((int) $event->contextinstanceid, (int) $event->userid);
+    }
+
+    /**
+     * Clears pending state for a valid teacher and quiz module context.
+     *
+     * @param int $cmid
+     * @param int $userid
+     * @return void
+     */
+    private static function acknowledge_teacher(int $cmid, int $userid): void {
         if ($userid <= 0 || $cmid <= 0) {
             return;
         }

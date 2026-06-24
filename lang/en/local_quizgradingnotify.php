@@ -41,7 +41,7 @@ $string['gradingnotifymethod_help'] = 'Choose how teachers are alerted when a st
 
 **Moodle notification** – A notification appears under the bell icon in Moodle. Delivery respects each teacher\'s messaging preferences.';
 $string['gradingnotifydelay'] = 'Notification delay';
-$string['gradingnotifydelay_help'] = 'Choose how long to wait before another notification can be sent for the same quiz after you have acknowledged the previous one by opening the Manual grading report.
+$string['gradingnotifydelay_help'] = 'Choose how long to wait before another notification can be sent for the same quiz after you have acknowledged the previous one by opening the Overview report, the Manual grading report, or an individual attempt review page.
 
 The first notification is sent immediately when a submission requires manual grading.
 

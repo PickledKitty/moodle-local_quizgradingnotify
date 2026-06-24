@@ -47,8 +47,8 @@ To reduce notification spam, the plugin deduplicates per teacher and per quiz:
 
 - Popup (bell) and email notifications are both suppressed while a previous
    notification is pending for the same quiz.
-- Pending state is cleared when the teacher opens that quiz's **Manual grading
-   report**.
+- Pending state is cleared when the teacher opens that quiz's **Overview**
+   report, **Manual grading** report, or an individual attempt review page.
 - After pending is cleared, the quiz's configured notification delay controls
    when another notification may be sent for that teacher and quiz.
 

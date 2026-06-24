@@ -39,4 +39,11 @@ $observers = [
         'internal'    => false,
         'priority'    => 0,
     ],
+    [
+        'eventname'   => '\mod_quiz\event\attempt_reviewed',
+        'callback'    => '\local_quizgradingnotify\observer::attempt_reviewed',
+        'includefile' => null,
+        'internal'    => false,
+        'priority'    => 0,
+    ],
 ];

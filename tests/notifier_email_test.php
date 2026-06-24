@@ -145,9 +145,9 @@ final class notifier_email_test extends \advanced_testcase {
     }
 
     /**
-     * Ensure grading-report acknowledgement still respects cooldown before resend.
+     * Ensure overview acknowledgement still respects cooldown before resend.
      */
-    public function test_notify_resends_only_after_cooldown_from_grading_report_view(): void {
+    public function test_notify_resends_only_after_cooldown_from_overview_report_view(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -189,7 +189,7 @@ final class notifier_email_test extends \advanced_testcase {
             'userid' => $teacher->id,
             'other' => [
                 'quizid' => $quiz->id,
-                'reportname' => 'grading',
+                'reportname' => 'overview',
             ],
         ]);
         observer::report_viewed($reportevent);
@@ -200,7 +200,7 @@ final class notifier_email_test extends \advanced_testcase {
             'pending' => 0,
         ]));
 
-        // Still suppressed immediately after report view because cooldown is active.
+        // Still suppressed immediately after overview because delay is active.
         $notifier->notify($event, $cm);
         $this->assertCount(1, $sink->get_messages());
 
@@ -222,9 +222,9 @@ final class notifier_email_test extends \advanced_testcase {
     }
 
     /**
-     * Ensure no-delay setting allows immediate resend after grading report view.
+     * Ensure one-by-one attempt review counts as acknowledgement with no delay.
      */
-    public function test_notify_resends_immediately_after_grading_report_view_with_no_delay(): void {
+    public function test_notify_resends_immediately_after_attempt_review_with_no_delay(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -255,15 +255,17 @@ final class notifier_email_test extends \advanced_testcase {
         $notifier = new notifier\email();
         $notifier->notify($event, $cm);
 
-        $reportevent = \mod_quiz\event\report_viewed::create([
+        $reviewevent = \mod_quiz\event\attempt_reviewed::create([
             'context' => \context_module::instance($cm->id),
             'userid' => $teacher->id,
+            'objectid' => 123,
+            'relateduserid' => $teacher->id,
+            'courseid' => $course->id,
             'other' => [
                 'quizid' => $quiz->id,
-                'reportname' => 'grading',
             ],
         ]);
-        observer::report_viewed($reportevent);
+        observer::attempt_reviewed($reviewevent);
 
         $notifier->notify($event, $cm);
 
