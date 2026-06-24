@@ -160,6 +160,13 @@ final class notifier_popup_test extends \advanced_testcase {
             'name' => 'Quiz 1',
         ]);
         $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id, false, MUST_EXIST);
+        $DB->insert_record('local_quizgradingnotify_cfg', [
+            'cmid' => $cm->id,
+            'method' => 'popup',
+            'delayseconds' => 7200,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
         $event = $this->create_attempt_event($cm, $quiz->id, $teacher->id);
 
         $sink = $this->redirectMessages();
@@ -197,9 +204,57 @@ final class notifier_popup_test extends \advanced_testcase {
             'cmid' => $cm->id,
             'userid' => $teacher->id,
         ], '*', MUST_EXIST);
-        $row->timesent = time() - pending_state::cooldown_seconds() - 1;
+        $row->timesent = time() - 7201;
         $row->timemodified = time();
         $DB->update_record('local_quizgradingnotify_pnd', $row);
+
+        $notifier->notify($event, $cm);
+
+        $this->assertCount(2, $sink->get_messages_by_component('local_quizgradingnotify'));
+        $sink->close();
+    }
+
+    /**
+     * Ensure no-delay setting allows immediate popup resend after grading report view.
+     */
+    public function test_notify_resends_popup_immediately_after_grading_report_view_with_no_delay(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_user();
+
+        $editingteacher = $DB->get_record('role', ['shortname' => 'editingteacher'], '*', MUST_EXIST);
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, $editingteacher->id);
+
+        $quiz = $this->getDataGenerator()->create_module('quiz', [
+            'course' => $course->id,
+            'name' => 'Quiz 2',
+        ]);
+        $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id, false, MUST_EXIST);
+        $DB->insert_record('local_quizgradingnotify_cfg', [
+            'cmid' => $cm->id,
+            'method' => 'popup',
+            'delayseconds' => 0,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+        $event = $this->create_attempt_event($cm, $quiz->id, $teacher->id);
+
+        $sink = $this->redirectMessages();
+        $notifier = new notifier\popup();
+        $notifier->notify($event, $cm);
+
+        $reportevent = \mod_quiz\event\report_viewed::create([
+            'context' => \context_module::instance($cm->id),
+            'userid' => $teacher->id,
+            'other' => [
+                'quizid' => $quiz->id,
+                'reportname' => 'grading',
+            ],
+        ]);
+        observer::report_viewed($reportevent);
 
         $notifier->notify($event, $cm);
 

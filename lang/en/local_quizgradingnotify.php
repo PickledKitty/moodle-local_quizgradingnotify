@@ -40,7 +40,18 @@ $string['gradingnotifymethod_help'] = 'Choose how teachers are alerted when a st
 **Email** – An email is sent to all teachers who can grade the quiz.
 
 **Moodle notification** – A notification appears under the bell icon in Moodle. Delivery respects each teacher\'s messaging preferences.';
+$string['gradingnotifydelay'] = 'Notification delay';
+$string['gradingnotifydelay_help'] = 'Choose how long to wait before another notification can be sent for the same quiz after you have acknowledged the previous one by opening the Manual grading report.
+
+The first notification is sent immediately when a submission requires manual grading.
+
+While a notification is pending, repeats are suppressed.
+
+After pending is cleared, this delay controls when another notification may be sent.';
 $string['messageprovider:grading_required'] = 'Quiz grading required';
+$string['notifydelay_1hour'] = 'Delay 1 hour';
+$string['notifydelay_2hours'] = 'Delay 2 hours';
+$string['notifydelay_none'] = 'No delay';
 $string['notify_email'] = 'Email';
 $string['notify_none'] = 'None';
 $string['notify_popup'] = 'Moodle notification (bell)';

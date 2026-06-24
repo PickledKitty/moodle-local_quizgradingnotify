@@ -31,33 +31,6 @@ defined('MOODLE_INTERNAL') || die();
  * @return bool
  */
 function xmldb_local_quizgradingnotify_upgrade($oldversion): bool {
-    global $DB;
-
-    $dbman = $DB->get_manager();
-
-    if ($oldversion < 2026062401) {
-        $table = new xmldb_table('local_quizgradingnotify_pnd');
-
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('cmid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('pending', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('timesent', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('timeacked', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $table->add_key('cmid-userid', XMLDB_KEY_UNIQUE, ['cmid', 'userid']);
-
-        $table->add_index('pending-cmid', XMLDB_INDEX_NOTUNIQUE, ['pending', 'cmid']);
-
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
-        }
-
-        upgrade_plugin_savepoint(true, 2026062401, 'local', 'quizgradingnotify');
-    }
-
+    // No upgrade steps are maintained while this plugin is in early development.
     return true;
 }

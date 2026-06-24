@@ -32,7 +32,11 @@ A Moodle local plugin (compatible with **Moodle 4.4 – 4.5.x**) that adds a
 1. Open a quiz's **Settings** page (the cog icon, or Edit settings).
 2. Expand the **Grading notifications** section near the bottom of the form.
 3. Select the desired notification method from the dropdown.
-4. Save changes.
+4. Choose a notification delay:
+   - No delay
+   - Delay 1 hour
+   - Delay 2 hours
+5. Save changes.
 
 From this point, whenever a student submits an attempt that contains at least
 one manually graded question (e.g. an Essay question), the configured
@@ -45,8 +49,8 @@ To reduce notification spam, the plugin deduplicates per teacher and per quiz:
    notification is pending for the same quiz.
 - Pending state is cleared when the teacher opens that quiz's **Manual grading
    report**.
-- After a send, an additional cooldown window (currently 2 hours) also
-   suppresses repeat notifications for that teacher and quiz.
+- After pending is cleared, the quiz's configured notification delay controls
+   when another notification may be sent for that teacher and quiz.
 
 ---
 

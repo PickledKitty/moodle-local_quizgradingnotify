@@ -4,7 +4,7 @@ Feature: Configure quiz grading notification method
   As a teacher
   I need to save a grading notification method on quiz settings
 
-  Scenario Outline: Teacher saves grading notification method for a quiz
+  Scenario Outline: Teacher saves grading notification settings for a quiz
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
@@ -22,11 +22,13 @@ Feature: Configure quiz grading notification method
     And I navigate to "Settings" in current page administration
     And I expand all fieldsets
     And I set the field "gradingnotifymethod" to "<methodlabel>"
+    And I set the field "gradingnotifydelay" to "<delaylabel>"
     And I press "Save and display"
     Then the quiz "Quiz 1" should have grading notification method "<methodvalue>"
+    And the quiz "Quiz 1" should have grading notification delay "<delayvalue>"
 
     Examples:
-      | methodlabel                | methodvalue |
-      | None                       | none        |
-      | Email                      | email       |
-      | Moodle notification (bell) | popup       |
+      | methodlabel                | methodvalue | delaylabel    | delayvalue |
+      | None                       | none        | No delay      | 0          |
+      | Email                      | email       | Delay 1 hour  | 3600       |
+      | Moodle notification (bell) | popup       | Delay 2 hours | 7200       |

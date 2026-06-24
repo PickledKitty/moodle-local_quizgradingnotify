@@ -9,6 +9,8 @@
         <FIELD NAME="cmid"         TYPE="int"  LENGTH="10" NOTNULL="true" COMMENT="Course-module ID of the quiz"/>
         <FIELD NAME="method"       TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="none"
                COMMENT="Notification method: none|email|popup"/>
+       <FIELD NAME="delayseconds" TYPE="int"  LENGTH="10" NOTNULL="true" DEFAULT="0"
+         COMMENT="Delay after acknowledgement before a new notification can be sent: 0|3600|7200"/>
         <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10" NOTNULL="true" DEFAULT="0"/>
         <FIELD NAME="timemodified" TYPE="int"  LENGTH="10" NOTNULL="true" DEFAULT="0"/>
       </FIELDS>

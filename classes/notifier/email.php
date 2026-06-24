@@ -38,12 +38,17 @@ class email implements \local_quizgradingnotify\notifier_interface {
      * @return void
      */
     public function notify(\core\event\base $event, \stdClass $cm): void {
+        global $DB;
+
         $context = \context_module::instance($cm->id);
         $teachers = get_enrolled_users($context, 'mod/quiz:grade');
 
         if (empty($teachers)) {
             return;
         }
+
+        $setting = $DB->get_record('local_quizgradingnotify_cfg', ['cmid' => $cm->id], 'delayseconds');
+        $delayseconds = (int) ($setting->delayseconds ?? 0);
 
         $gradingurl = new \moodle_url('/mod/quiz/report.php', [
             'id' => $cm->id,
@@ -67,7 +72,7 @@ class email implements \local_quizgradingnotify\notifier_interface {
             $cmid = (int) $cm->id;
             $userid = (int) $teacher->id;
 
-            if (pending_state::has_pending($cmid, $userid)) {
+            if (pending_state::has_pending($cmid, $userid, $delayseconds)) {
                 continue;
             }
 

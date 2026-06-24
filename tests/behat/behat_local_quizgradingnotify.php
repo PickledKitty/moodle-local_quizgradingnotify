@@ -55,6 +55,9 @@ class behat_local_quizgradingnotify extends behat_base {
         $existing = $DB->get_record('local_quizgradingnotify_cfg', ['cmid' => $cm->id]);
         if ($existing) {
             $existing->method = $method;
+            if (!isset($existing->delayseconds)) {
+                $existing->delayseconds = 0;
+            }
             $existing->timemodified = time();
             $DB->update_record('local_quizgradingnotify_cfg', $existing);
             return;
@@ -63,6 +66,7 @@ class behat_local_quizgradingnotify extends behat_base {
         $DB->insert_record('local_quizgradingnotify_cfg', [
             'cmid' => $cm->id,
             'method' => $method,
+            'delayseconds' => 0,
             'timecreated' => time(),
             'timemodified' => time(),
         ]);
@@ -85,6 +89,32 @@ class behat_local_quizgradingnotify extends behat_base {
         if ($setting->method !== $method) {
             throw new Exception(
                 "Expected method '$method' for quiz '$quizname', got '{$setting->method}'."
+            );
+        }
+    }
+
+    /**
+     * Assert the saved grading notification delay for a quiz.
+     *
+     * @Then /^the quiz "(?P<quizname_str>(?:[^"]|\\")*)" should have grading notification delay "(?P<delay_str>(?:[^"]|\\")*)"/
+     * @param string $quizname
+     * @param string $delay
+     */
+    public function the_quiz_should_have_grading_notification_delay(string $quizname, string $delay): void {
+        global $DB;
+
+        $allowed = ['0', '3600', '7200'];
+        if (!in_array($delay, $allowed, true)) {
+            throw new Exception("Unsupported grading notification delay '$delay'.");
+        }
+
+        $quiz = $DB->get_record('quiz', ['name' => $quizname], 'id,course', MUST_EXIST);
+        $cm = get_coursemodule_from_instance('quiz', $quiz->id, $quiz->course, false, MUST_EXIST);
+        $setting = $DB->get_record('local_quizgradingnotify_cfg', ['cmid' => $cm->id], 'delayseconds', MUST_EXIST);
+
+        if ((string) $setting->delayseconds !== $delay) {
+            throw new Exception(
+                "Expected delay '$delay' for quiz '$quizname', got '{$setting->delayseconds}'."
             );
         }
     }

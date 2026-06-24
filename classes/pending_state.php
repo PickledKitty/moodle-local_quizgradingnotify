@@ -29,31 +29,18 @@ namespace local_quizgradingnotify;
  */
 class pending_state {
     /**
-     * Cooldown to avoid repeated notifications during active grading windows.
-     */
-    private const COOLDOWN_SECONDS = 7200;
-
-    /**
-     * Returns cooldown in seconds.
-     *
-     * @return int
-     */
-    public static function cooldown_seconds(): int {
-        return self::COOLDOWN_SECONDS;
-    }
-
-    /**
      * Returns true when a teacher should be suppressed from receiving
      * another notification for this quiz module.
      *
      * Suppression is active when there is a pending notification, or when
-     * a notification was sent recently within the cooldown window.
+     * a notification was sent recently within the configured delay window.
      *
      * @param int $cmid
      * @param int $userid
+     * @param int $delayseconds
      * @return bool
      */
-    public static function has_pending(int $cmid, int $userid): bool {
+    public static function has_pending(int $cmid, int $userid, int $delayseconds = 0): bool {
         global $DB;
 
         $record = $DB->get_record('local_quizgradingnotify_pnd', [
@@ -74,7 +61,12 @@ class pending_state {
             return false;
         }
 
-        return (time() - $timesent) < self::cooldown_seconds();
+        $delayseconds = max(0, $delayseconds);
+        if ($delayseconds === 0) {
+            return false;
+        }
+
+        return (time() - $timesent) < $delayseconds;
     }
 
     /**

@@ -165,6 +165,13 @@ final class notifier_email_test extends \advanced_testcase {
             'name' => 'Quiz 3',
         ]);
         $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id, false, MUST_EXIST);
+        $DB->insert_record('local_quizgradingnotify_cfg', [
+            'cmid' => $cm->id,
+            'method' => 'email',
+            'delayseconds' => 7200,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
         $event = $this->create_attempt_event($cm, $quiz->id, $teacher->id);
 
         $sink = $this->redirectEmails();
@@ -202,9 +209,61 @@ final class notifier_email_test extends \advanced_testcase {
             'cmid' => $cm->id,
             'userid' => $teacher->id,
         ], '*', MUST_EXIST);
-        $row->timesent = time() - pending_state::cooldown_seconds() - 1;
+        $row->timesent = time() - 7201;
         $row->timemodified = time();
         $DB->update_record('local_quizgradingnotify_pnd', $row);
+
+        $notifier->notify($event, $cm);
+
+        $messages = $sink->get_messages();
+        $sink->close();
+
+        $this->assertCount(2, $messages);
+    }
+
+    /**
+     * Ensure no-delay setting allows immediate resend after grading report view.
+     */
+    public function test_notify_resends_immediately_after_grading_report_view_with_no_delay(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_user([
+            'email' => 'teacher4@example.com',
+        ]);
+
+        $editingteacher = $DB->get_record('role', ['shortname' => 'editingteacher'], '*', MUST_EXIST);
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, $editingteacher->id);
+
+        $quiz = $this->getDataGenerator()->create_module('quiz', [
+            'course' => $course->id,
+            'name' => 'Quiz 4',
+        ]);
+        $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id, false, MUST_EXIST);
+        $DB->insert_record('local_quizgradingnotify_cfg', [
+            'cmid' => $cm->id,
+            'method' => 'email',
+            'delayseconds' => 0,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+        $event = $this->create_attempt_event($cm, $quiz->id, $teacher->id);
+
+        $sink = $this->redirectEmails();
+        $notifier = new notifier\email();
+        $notifier->notify($event, $cm);
+
+        $reportevent = \mod_quiz\event\report_viewed::create([
+            'context' => \context_module::instance($cm->id),
+            'userid' => $teacher->id,
+            'other' => [
+                'quizid' => $quiz->id,
+                'reportname' => 'grading',
+            ],
+        ]);
+        observer::report_viewed($reportevent);
 
         $notifier->notify($event, $cm);
 

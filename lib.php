@@ -69,11 +69,32 @@ function local_quizgradingnotify_coursemodule_standard_elements($formwrapper, $m
         'local_quizgradingnotify'
     );
 
+    $delayoptions = [
+        0 => get_string('notifydelay_none', 'local_quizgradingnotify'),
+        3600 => get_string('notifydelay_1hour', 'local_quizgradingnotify'),
+        7200 => get_string('notifydelay_2hours', 'local_quizgradingnotify'),
+    ];
+
+    $mform->addElement(
+        'select',
+        'gradingnotifydelay',
+        get_string('gradingnotifydelay', 'local_quizgradingnotify'),
+        $delayoptions
+    );
+    $mform->setDefault('gradingnotifydelay', 0);
+    $mform->setType('gradingnotifydelay', PARAM_INT);
+    $mform->addHelpButton(
+        'gradingnotifydelay',
+        'gradingnotifydelay',
+        'local_quizgradingnotify'
+    );
+
     // Pre-populate if editing an existing quiz.
     if ($cmid) {
         $setting = $DB->get_record('local_quizgradingnotify_cfg', ['cmid' => $cmid]);
         if ($setting) {
             $mform->setDefault('gradingnotifymethod', $setting->method);
+            $mform->setDefault('gradingnotifydelay', (int) ($setting->delayseconds ?? 0));
         }
     }
 }
@@ -95,20 +116,27 @@ function local_quizgradingnotify_coursemodule_edit_post_actions($data, $course):
     }
 
     $method  = isset($data->gradingnotifymethod) ? $data->gradingnotifymethod : 'none';
+    $delayseconds = isset($data->gradingnotifydelay) ? (int) $data->gradingnotifydelay : 0;
     $allowed = ['none', 'email', 'popup'];
+    $alloweddelays = [0, 3600, 7200];
     if (!in_array($method, $allowed, true)) {
         $method = 'none';
+    }
+    if (!in_array($delayseconds, $alloweddelays, true)) {
+        $delayseconds = 0;
     }
 
     $existing = $DB->get_record('local_quizgradingnotify_cfg', ['cmid' => $cm->id]);
     if ($existing) {
         $existing->method       = $method;
+        $existing->delayseconds = $delayseconds;
         $existing->timemodified = time();
         $DB->update_record('local_quizgradingnotify_cfg', $existing);
     } else {
         $DB->insert_record('local_quizgradingnotify_cfg', [
             'cmid'         => $cm->id,
             'method'       => $method,
+            'delayseconds' => $delayseconds,
             'timecreated'  => time(),
             'timemodified' => time(),
         ]);
